@@ -21,6 +21,7 @@
 #!/bin/bash
 
 ROOT_DIR=$(pwd)
+EA_REPO="EMULATED_ACCELERATOR_REPO"
 EA_SHA="EMULATED_ACCELERATOR_SHA"
 DEF_FILE=$1
 ACC_DIR=$ROOT_DIR/accelerator
@@ -31,17 +32,23 @@ if [ "$#" -eq 3 ]; then
     EA_SHA_TMP=$3
 else
     cd $ACC_DIR
+    
     EA_SHA_BRANCH=$(git branch --show-current)
     EA_SHA_TMP=$(git rev-parse $EA_SHA_BRANCH)
-    cd $ROOT_DIR
+    EA_REPO_URL=$(git remote get-url origin)
+    cd $ROOT_DIR    
+
 fi;
 
 echo "$EA_SHA: $EA_SHA_TMP"
 NEW_SHA="$EA_SHA: $EA_SHA_TMP"
+NEW_EA_REPO="$EA_REPO: $EA_REPO_URL"
 
 #switch the lines
 
 sed -i "0,/$EA_SHA/{s|$EA_SHA.*|$NEW_SHA|}" $DEF_FILE
+sed -i "0,/$EA_REPO/{s|$EA_REPO.*|$NEW_EA_REPO|}" $DEF_FILE
+
 
 
 

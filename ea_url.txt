@@ -1,3 +1,4 @@
-EMULATED_ACCELERATOR_NAME: acme
-EMULATED_ACCELERATOR_REPO: https://gitlab.bsc.es/hwdesign/frameworks/meep_openpiton.git
-EMULATED_ACCELERATOR_SHA: b563b46f7fd043eafa22ba8810de42d6736be562
+EMULATED_ACCELERATOR_NAME: ea_demo
+EMULATED_ACCELERATOR_REPO: git@github.com:acostillado/ea_demo.git
+EMULATED_ACCELERATOR_SHA: 690c118cf8d33a20034754c5deaa2cf3d121cbde
+
