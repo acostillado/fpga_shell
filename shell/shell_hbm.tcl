@@ -32,6 +32,8 @@ set HBMaxi    [dict get $HBMentry AxiIntf]
 
 set HBMidWidth   [dict get $HBMentry AxiIdWidth]
 set HBMuserWidth [dict get $HBMentry AxiUserWidth]
+set HBMdataWidth [dict get $HBMentry AxiDataWidth]
+set HBMaxiProt "AXI4"
 ## CAUTION: Axi user signals are not supported as input to the protocol 
 ## converter to HBM. Hardcoded to 0
 # set HBMuserWidth 0
@@ -60,8 +62,8 @@ if { $APBRstPin == "" } {
 
 putmeeps "Creating HBM instance..."
 
-set HBMaxiProt   [string replace $HBMaxi   [string first "-" $HBMaxi] end]
-set HBMdataWidth [string replace $HBMaxi 0 [string first "-" $HBMaxi]    ]
+# set HBMaxiProt   [string replace $HBMaxi   [string first "-" $HBMaxi] end]
+# set HBMdataWidth [string replace $HBMaxi 0 [string first "-" $HBMaxi]    ]
 
 if { $HBMaxi != "AXI3-256" && $HBMaxi != "RAMAIP" } {
 # all aside AXI signal properties are left as in HBM
