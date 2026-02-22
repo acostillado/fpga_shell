@@ -43,6 +43,7 @@ workflow:
 variables: !reference [.setup, variables]
 
 stages:
+    - validation
     - synthesis
     - implementation
     - bitstream
@@ -62,6 +63,30 @@ stages:
     - echo "After update_sha:"; cat ea_url.txt
     - sh/extract_url.sh ea_url.txt $CI_BUILD_TOKEN
     - echo "After update_sha:"; cat ea_url.txt
+
+tcl_generation_validation:
+        stage: validation
+        interruptible: true
+        retry: 1
+        tags:
+            - synthesis
+        variables:
+            GIT_STRATEGY: clone
+            GIT_SUBMODULE_STRATEGY: "recursive"
+            FPGA_BOARD: u55c
+            EA: dummy_ea
+        script:
+            - make initialize
+            - make $FPGA_BOARD
+            - make project EA_PARAM=$EA
+            - echo "Structural Vivado BD generation and validation passed."
+        allow_failure: false
+        artifacts:
+          when: always
+          expire_in: 3 day
+          paths:
+            - tmp
+            - project/
 
 # EMULATED_ACCELERATOR might be an export variable instead of a GitLab one.
 # Then, before script can setup this bash variable depending on the value

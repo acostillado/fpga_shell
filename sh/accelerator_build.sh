@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Copyright 2022 Barcelona Supercomputing Center-Centro Nacional de Supercomputación
 
 # Licensed under the Solderpad Hardware License v 2.1 (the "License");
@@ -21,21 +22,15 @@
 BR='\033[1;31m'     #Bold Red 
 NC='\033[0;0;0m'    #NO COLOR
 
-cd accelerator
+cd accelerator || exit 1
 
 # execute accelerator_build using no debug mode
-meep_shell/accelerator_build.sh $1 $2 $3 $4 $5 $6 $7 $8 
-
-#check the exit status of accelerator_build.sh
-if [ "$?" -eq 1 ]; then
-    
-    echo -e  ${BR}"accelerator_build.sh has failed during the execution: make project" ${NC}
+if ! meep_shell/accelerator_build.sh "$1" "$2" "$3" "$4" "$5" "$6" "$7" "$8"; then
+    echo -e "${BR}accelerator_build.sh has failed during the execution: make project${NC}"
     exit 1
 else
-    
     echo "accelerator_build.sh has succeded"
     exit 0
 fi
-
 
 cd ..

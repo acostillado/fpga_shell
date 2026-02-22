@@ -15,7 +15,14 @@
 # Author: Daniel J.Mazure, BSC-CNS
 # Date: 22.02.2022
 # Description: 
+proc instantiate_ddr4 { config_dict } {
 
+# Extract required variables from the configuration dictionary
+set DDR4entry      [dict get $config_dict DDR4entry]
+set PortList       [dict get $config_dict PortList]
+set g_ddr4_file    [dict get_default $config_dict g_ddr4_file ""]
+set pcie_clk_pin   [dict get $config_dict pcie_clk_pin]
+set pcie_rst_pin   [dict get $config_dict pcie_rst_pin]
 
 putwarnings $DDR4entry
 
@@ -35,7 +42,7 @@ set DDR4userWidth [dict get $DDR4entry AxiUserWidth]
 set DDR4userWidth 0
 
 set PortList [lappend PortList $g_ddr4_file]
-
+dict set config_dict PortList $PortList
 
 putmeeps "Creating DDR4 instance..."
 ### TODO: Region, prot and others can be extracted as the other widths
@@ -101,7 +108,7 @@ save_bd_design
 # Input CLK
 make_bd_intf_pins_external  [get_bd_intf_pins ${ddr_dev}/C0_SYS_CLK]
 set_property name sysclk${DDR4ChNum} [get_bd_intf_ports C0_SYS_CLK_0]
-set_property CONFIG.FREQ_HZ $FREQ_HZ [get_bd_intf_ports /sysclk${DDR4ChNum}]
+set_property CONFIG.FREQ_HZ $DDR4Freq [get_bd_intf_ports /sysclk${DDR4ChNum}]
 
 
 #DDR io interface
@@ -168,3 +175,6 @@ connect_bd_net [get_bd_ports hbm_cattrip] [get_bd_pins gnd_cattrip/dout]
 
 save_bd_design
 
+return $config_dict
+
+}

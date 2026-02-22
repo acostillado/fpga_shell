@@ -88,8 +88,13 @@ update_ip_catalog -rebuild
 ####################################################
 # GENERATE TOP FILE
 ####################################################
-putmeeps "Generating the RTL top file ..."
-source $g_root_dir/tcl/gen_top.tcl
+putmeeps "Generating the RTL top file via Python generator ..."
+set python_cmd "python3 $g_root_dir/scripts/gen_top.py --accel_dir $g_root_dir/accelerator --shell_dir $g_root_dir --out_file $g_root_dir/src/system_top.sv"
+if { [catch {exec {*}$python_cmd} ErrorMessage] } {
+	puterrors "RTL Generator (gen_top.py) failed!"
+	puterrors "$ErrorMessage"
+	exit 1
+}
 
 
 ####################################################

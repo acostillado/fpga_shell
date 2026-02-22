@@ -16,6 +16,16 @@
 # Date: 22.02.2022
 # Description: 
 
+proc instantiate_100gb_ethernet { config_dict bd_instance_name } {
+
+# Extract required variables from the configuration dictionary
+set ETHentry      [dict get $config_dict ETHentry]
+set PortList      [dict get $config_dict PortList]
+set g_Eth100Gb_file [dict get_default $config_dict g_Eth100Gb_file ""]
+set g_root_dir    [dict get $config_dict g_root_dir]
+set g_board_part  [dict get $config_dict g_board_part]
+set g_ip_version  [dict get $config_dict g_ip_version]
+set HBM_AXI_LABEL [dict get_default $config_dict HBM_AXI_LABEL ""]
 
 set ETHClkNm   [dict get $ETHentry SyncClk Label]
 set ETHFreq    [dict get $ETHentry SyncClk Freq]
@@ -52,6 +62,7 @@ putmeeps "... Done."
 update_ip_catalog -rebuild
 
 set PortList [lappend PortList $g_Eth100Gb_file]
+dict set config_dict PortList $PortList
 
 set EthHierName "Eth100GbSyst_w_${ETHdmaMem}"
 source $g_root_dir/ip/100GbEthernet/tcl/project_options.tcl
@@ -151,21 +162,25 @@ if { ${ETHdmaMem} eq "hbm" } {
   set RxHBMCh [expr $EthHBMCh+1]
   set SgHBMCh [expr $EthHBMCh+2]
 
-  set_property -dict [list CONFIG.USER_SAXI_${TxHBMCh} {TRUE}] [get_bd_cells hbm_0]
-  set_property -dict [list CONFIG.USER_SAXI_${RxHBMCh} {TRUE}] [get_bd_cells hbm_0]
-  set_property -dict [list CONFIG.USER_SAXI_${SgHBMCh} {TRUE}] [get_bd_cells hbm_0]
+  set_property -dict [list CONFIG.USER_SAXI_${TxHBMCh} {TRUE}] [get_bd_cells $bd_instance_name]
+  set_property -dict [list CONFIG.USER_SAXI_${RxHBMCh} {TRUE}] [get_bd_cells $bd_instance_name]
+  set_property -dict [list CONFIG.USER_SAXI_${SgHBMCh} {TRUE}] [get_bd_cells $bd_instance_name]
 
-  connect_bd_intf_net [get_bd_intf_pins hbm_0/SAXI_${TxHBMCh}${HBM_AXI_LABEL}] [get_bd_intf_pins ${EthHierName}/m_axi_tx]
-  connect_bd_intf_net [get_bd_intf_pins hbm_0/SAXI_${RxHBMCh}${HBM_AXI_LABEL}] [get_bd_intf_pins ${EthHierName}/m_axi_rx]
-  connect_bd_intf_net [get_bd_intf_pins hbm_0/SAXI_${SgHBMCh}${HBM_AXI_LABEL}] [get_bd_intf_pins ${EthHierName}/m_axi_sg]
+  connect_bd_intf_net [get_bd_intf_pins $bd_instance_name/SAXI_${TxHBMCh}${HBM_AXI_LABEL}] [get_bd_intf_pins ${EthHierName}/m_axi_tx]
+  connect_bd_intf_net [get_bd_intf_pins $bd_instance_name/SAXI_${RxHBMCh}${HBM_AXI_LABEL}] [get_bd_intf_pins ${EthHierName}/m_axi_rx]
+  connect_bd_intf_net [get_bd_intf_pins $bd_instance_name/SAXI_${SgHBMCh}${HBM_AXI_LABEL}] [get_bd_intf_pins ${EthHierName}/m_axi_sg]
 
-  connect_bd_net [get_bd_pins hbm_0/AXI_${TxHBMCh}_ACLK] [get_bd_pins ${EthHierName}/tx_clk]
-  connect_bd_net [get_bd_pins hbm_0/AXI_${RxHBMCh}_ACLK] [get_bd_pins ${EthHierName}/rx_clk]
-  connect_bd_net [get_bd_pins hbm_0/AXI_${SgHBMCh}_ACLK] [get_bd_pins ${EthHierName}/s_axi_clk]
+  connect_bd_net [get_bd_pins $bd_instance_name/AXI_${TxHBMCh}_ACLK] [get_bd_pins ${EthHierName}/tx_clk]
+  connect_bd_net [get_bd_pins $bd_instance_name/AXI_${RxHBMCh}_ACLK] [get_bd_pins ${EthHierName}/rx_clk]
+  connect_bd_net [get_bd_pins $bd_instance_name/AXI_${SgHBMCh}_ACLK] [get_bd_pins ${EthHierName}/s_axi_clk]
 
-  connect_bd_net [get_bd_pins hbm_0/AXI_${TxHBMCh}_ARESET_N] [get_bd_pins ${EthHierName}/tx_rstn]
-  connect_bd_net [get_bd_pins hbm_0/AXI_${RxHBMCh}_ARESET_N] [get_bd_pins ${EthHierName}/rx_rstn]
-  connect_bd_net [get_bd_pins hbm_0/AXI_${SgHBMCh}_ARESET_N] [get_bd_pins ${EthHierName}/s_axi_resetn]
+  connect_bd_net [get_bd_pins $bd_instance_name/AXI_${TxHBMCh}_ARESET_N] [get_bd_pins ${EthHierName}/tx_rstn]
+  connect_bd_net [get_bd_pins $bd_instance_name/AXI_${RxHBMCh}_ARESET_N] [get_bd_pins ${EthHierName}/rx_rstn]
+  connect_bd_net [get_bd_pins $bd_instance_name/AXI_${SgHBMCh}_ARESET_N] [get_bd_pins ${EthHierName}/s_axi_resetn]
 }
 
 save_bd_design
+
+return $config_dict
+
+}

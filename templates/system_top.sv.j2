@@ -1,0 +1,55 @@
+// Automatically generated via Python/Jinja2
+
+module system_top
+   (
+    // Main input clock
+    input         sysclk0_clk_n  ,
+    input         sysclk0_clk_p  ,
+    // Secondary clock
+    input         sysclk1_clk_n  ,
+    input         sysclk1_clk_p  , 
+	// system reset - CPU_RESET L30
+    input         resetn  ,
+    {% if pcie %}
+    // PCI express
+    input         pcie_refclk_clk_n    ,
+    input         pcie_refclk_clk_p    ,
+    input         pcie_perstn          ,		
+    input  [{{ pcie.rx_lanes - 1 }}:0] pci_express_{{ pcie.rx_lanes }}_rxn  ,
+    input  [{{ pcie.rx_lanes - 1 }}:0] pci_express_{{ pcie.rx_lanes }}_rxp  ,
+    output [{{ pcie.tx_lanes - 1 }}:0] pci_express_{{ pcie.tx_lanes }}_txn  ,
+    output [{{ pcie.tx_lanes - 1 }}:0] pci_express_{{ pcie.tx_lanes }}_txp  ,
+    {% endif %}
+    {% if hbm_used %}
+    output        hbm_cattrip ,
+    {% endif %}
+    
+    // Dynamic Top Level Ports from Interfaces
+    {% for port in dynamic_ports %}
+    {{ port.direction }} {{ port.width_expr }} {{ port.name }} {% if not loop.last or dynamic_wires %},{% endif %}
+    {% endfor %}
+   ); 
+
+// Wires from EA definition
+{% for wire in ea_wires %}
+wire {{ wire.width_expr }} {{ wire.name }};
+{% endfor %}
+
+// Shell Instance
+meep_shell meep_shell_inst (
+    {% if hbm_used %}
+    .hbm_cattrip (hbm_cattrip),
+    {% endif %}
+    {% for port in shell_ports %}
+    .{{ port.name }} ({{ port.name }}){% if not loop.last %},{% endif %}
+    {% endfor %}
+);
+
+// EA Instance
+{{ ea_module_name }} {{ ea_module_name }}_inst ( 
+    {% for port in ea_ports %}
+    .{{ port.name }} ({{ port.name }}){% if not loop.last %},{% endif %}
+    {% endfor %}
+);
+
+endmodule

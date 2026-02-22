@@ -16,6 +16,17 @@
 # Date: 22.02.2022
 # Description: 
 
+proc instantiate_aurora { config_dict } {
+
+# Extract required variables from the configuration dictionary
+set AURORAentry      [dict get $config_dict AURORAentry]
+set PortList         [dict get $config_dict PortList]
+set g_aurora0_file   [dict get_default $config_dict g_aurora0_file ""]
+set g_aurora1_file   [dict get_default $config_dict g_aurora1_file ""]
+set g_root_dir       [dict get $config_dict g_root_dir]
+set g_board_part     [dict get $config_dict g_board_part]
+set g_ip_version     [dict get $config_dict g_ip_version]
+set HBM_AXI_LABEL    [dict get_default $config_dict HBM_AXI_LABEL ""]
 
 # This tcl handles both Aurora modes, RAW and DMA. We use the fact that the two options differ
 # only in the "dma" or "raw" part of the string, even for the PATH of the IPs. 
@@ -99,7 +110,7 @@ if { $AuroraQSFP == "qsfp0" } {
 }
 
 set PortList [lappend PortList $g_aurora_if_file]
-
+dict set config_dict PortList $PortList
 
 connect_bd_net [get_bd_pins ${AurHierName}/s_axi_clk]            [get_bd_pins rst_ea_$AuroraClkNm/slowest_sync_clk]
 connect_bd_net [get_bd_pins rst_ea_$AuroraClkNm/peripheral_aresetn] [get_bd_pins ${AurHierName}/s_axi_resetn]
@@ -153,3 +164,7 @@ if { $AuroraMode == "dma" && ${AuroradmaMem} eq "hbm" } {
 }
 
 save_bd_design
+
+return $config_dict
+
+}
