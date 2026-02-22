@@ -31,11 +31,11 @@ def test_parse_ea_module(file_content, expected_ports):
 
 @pytest.mark.parametrize("csv_content, expected_config", [
     (
-        "PCIE, 0, x16\nHBM, 1, 8GB\n",
+        "PCIE, yes, x16\nHBM, yes, 8GB\n",
         {'pcie': {'rx_lanes': 16, 'tx_lanes': 16}, 'hbm_used': True}
     ),
     (
-        "# Comment\nETHERNET, 0\n",
+        "# Comment\nETHERNET, no\n",
         {'pcie': False, 'hbm_used': False}
     )
 ])
@@ -48,5 +48,54 @@ def test_parse_accelerator_def(csv_content, expected_config):
         config = parse_accelerator_def(temp_path)
         assert config['pcie'] == expected_config['pcie']
         assert config['hbm_used'] == expected_config['hbm_used']
+    finally:
+        os.remove(temp_path)
+
+
+# Negative Tests
+from scripts.gen_top import ParserError
+
+def test_missing_files_raise_errors():
+    with pytest.raises(FileNotFoundError):
+        parse_ea_module("/path/to/nonexistent/ea.sv")
+        
+    with pytest.raises(FileNotFoundError):
+        parse_accelerator_def("/path/to/nonexistent/def.csv")
+
+def test_malformed_ea_module_raises_error():
+    # File missing both 'module' and 'endmodule' keywords entirely
+    malformed_sv = "input wire clk;\n// missing declaration\n"
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tf:
+        tf.write(malformed_sv)
+        temp_path = tf.name
+        
+    try:
+        with pytest.raises(ParserError, match="does not contain complete module"):
+            parse_ea_module(temp_path)
+    finally:
+        os.remove(temp_path)
+        
+def test_ea_module_missing_name_raises_error():
+    # File has keywords but regex fails to extract a name
+    malformed_sv = "module  \ninput wire clk;\nendmodule"
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tf:
+        tf.write(malformed_sv)
+        temp_path = tf.name
+        
+    try:
+        with pytest.raises(ParserError, match="Could not extract module name"):
+            parse_ea_module(temp_path)
+    finally:
+        os.remove(temp_path)
+
+def test_malformed_csv_raises_error():
+    malformed_csv = "JUST_A_STRING_NO_COMMAS\n"
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as tf:
+        tf.write(malformed_csv)
+        temp_path = tf.name
+        
+    try:
+        with pytest.raises(ValueError, match="Malformed row in CSV"):
+            parse_accelerator_def(temp_path)
     finally:
         os.remove(temp_path)
